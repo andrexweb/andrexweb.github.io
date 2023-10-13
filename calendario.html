@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Festivos Colombianos</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Festivos Colombianos">
+    <meta name="keywords" content="calendario, festivos, colombia">
+    <meta name="author" content="andrexweb">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <style>
+        body {
+            background-color: white;
+            padding: 0px;
+            margin: 0px;
+            display: grid;
+            height: 100vh;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .header {
+            background-color: #fcd116;
+            color: #000000;
+            padding: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: calc(.9rem + 1vw);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto auto auto auto auto auto auto;
+            gap: 5px;
+            background-color: #003893;
+            padding: 5px;
+        }
+
+        .grid-container>div {
+            background-color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 10px 0;
+            font-size: calc(.6rem + 1vw);
+        }
+
+        .item1 {
+            grid-row-start: 1;
+            grid-row-end: 4;
+        }
+
+        .footer {
+            background-color: #ce1126;
+            color: #000000;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .number-picker {
+            display: flex;
+            align-items: center;
+        }
+
+        .number-input {
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 0 5px;
+            padding: 16px;
+        }
+
+        .select-input {
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            padding: 16px;
+        }
+
+        button {
+            background-color: #c4a000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 16px;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .holiday {
+            text-align: center;
+            font-size: 20px;
+            padding: 16px;
+            color: #fff;
+            background-color: MediumSeaGreen;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Calendario con Festivos</h1>
+    </div>
+
+    <div>
+        <form onsubmit="return false;">
+            <div class="number-picker">
+                <button class="decrement">&lt;</button>
+                <input type="number" class="number-input" min="1900" max="3000">
+                <button class="increment">&gt;</button>
+            </div>
+            <select id="meses" name="meses" class="select-input">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </form>
+
+        <div id="demo" class="grid-container"></div>
+
+        <div id="holiday" class="holiday"></div>
+    </div>
+    <div class="footer">
+        <h1>Calendario Web</h1>
+        <h6>2023 - Versión 0.1.0</h6>
+    </div>
+
+    <script>
+
+        Date.prototype.setHolidayName = function (name) {
+            this.holidayName = name
+        }
+        Date.prototype.getHolidayName = function () {
+            return this.holidayName
+        }
+        Date.prototype.isSunday = function () {
+            return this.getDay() == 0
+        }
+
+        function anonymousGregorianAlgorithm(year) {
+            const a = year % 19;
+            const b = Math.floor(year / 100);
+            const c = year % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const n = h + l - 7 * m + 114;
+            const month = Math.floor(n / 31);
+            const day = 1 + (n % 31);
+            return new Date(year, month - 1, day);
+        }
+
+        class ColombiaHoliday {
+            constructor(name, options) {
+
+                this.holidayName = name;
+
+                if (options.easterDay) {
+                    this.isLeyEmiliani = options.easterDay.getFullYear() > 1983 ? options.emilini : false;
+
+                    if (!this.isLeyEmiliani) {
+                        this.day = this.easterAdd(options.easterDay, options.addEaster);
+                    } else if (this.leyEmiliani) {
+                        this.day = this.easterWithLeyEmiliani(options.easterDay, options.addEaster);
+                    }
+                } else {
+                    this.isLeyEmiliani = options.year > 1983 ? options.emilini : false;
+
+                    if (!this.isLeyEmiliani) {
+                        this.day = new Date(options.year, options.month - 1, options.day);
+                    } else if (this.leyEmiliani) {
+                        this.day = this.leyEmilianiDate(options.year, options.month - 1, options.day);
+                    }
+                }
+                this.day.setHolidayName(this.holidayName)
+            }
+
+            getHoliday() {
+                return this.day;
+            }
+
+            getHolidayName() {
+                return this.holidayName;
+            }
+
+            easterAdd(easterDay, days) {
+                const calendar = new Date(easterDay);
+                calendar.setDate(easterDay.getDate() + days);
+                return calendar;
+            }
+
+            /**
+             * Ley Memiliani o Ley 51 de 1983
+             *
+             * @param {number} year
+             * @param {number} month
+             * @param {number} day
+             * @returns {Date}
+             */
+            leyEmilianiDate(year, month, day) {
+                const calendar = new Date(year, month, day);
+                this.leyEmiliani(calendar);
+                return calendar;
+            }
+
+            easterWithLeyEmiliani(computus, days) {
+                const calendar = new Date(computus);
+                calendar.setDate(computus.getDate() + days);
+                this.leyEmiliani(calendar);
+                return calendar;
+            }
+
+            leyEmiliani(calendar) {
+                const diaSemana = calendar.getDay();
+                if (diaSemana !== 1) {
+                    const dias = (6 - diaSemana + 2) % 7;
+                    calendar.setDate(calendar.getDate() + dias);
+                }
+            }
+        }
+
+        const i18nHolidays_es = {
+            holiday_new_year: 'Día de Año Nuevo',
+            holiday_three_kings: 'Día de los Reyes Magos',
+            holiday_saint_joseph: 'San Jose',
+            holiday_holy_thursday: 'Jueves Santo',
+            holiday_holy_friday: 'Viernes Santo',
+            holiday_labor: 'Día del trabajo',
+            holiday_ascension_of_jesus: 'Ascensión de Jesús',
+            holiday_corpus_christi: 'Corpus Christi',
+            holiday_sacred_heart_of_jesus: 'Sagrado Corazón de Jesús',
+            holiday_saint_peter_and_paul: 'San Pedro y San Pablo',
+            holiday_cry_of_independence: 'Grito de Independencia',
+            holiday_boyaca_batttle: 'Batalla de Boyacá',
+            holiday_assumptio_of_the_virgin: 'Asunción de la Virgen',
+            holiday_day_of_race: 'Día de la Raza',
+            holiday_all_saints: 'Todos los Santos',
+            holiday_independence_of_cartagena: 'Independencia de Cartagena',
+            holiday_immaculate_conception: 'Inmaculada Concepción',
+            holiday_christmas: 'Navidad(pascua)'
+        }
+
+        const Calendar = { JANUARY: 1, MARCH: 3, MAY: 5, JUNE: 6, JULY: 7, AUGUST: 8, OCTOBER: 10, NOVEMBER: 11, DECEMBER: 12 }
+
+        function getHolidays(year) {
+
+            const easterDay = anonymousGregorianAlgorithm(year)
+            let holidays = []
+
+            holidays.push(new ColombiaHoliday("holiday_new_year", { year, 'month': Calendar.JANUARY, 'day': 1, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_three_kings", { year, 'month': Calendar.JANUARY, 'day': 6, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_saint_joseph", { year, 'month': Calendar.MARCH, 'day': 19, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_holy_thursday", { easterDay, 'addEaster': -3, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_holy_friday", { easterDay, 'addEaster': -2, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_labor", { year, 'month': Calendar.MAY, 'day': 1, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_ascension_of_jesus", { easterDay, 'addEaster': 39, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_corpus_christi", { easterDay, 'addEaster': 60, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_sacred_heart_of_jesus", { easterDay, 'addEaster': 68, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_saint_peter_and_paul", { year, 'month': Calendar.JUNE, 'day': 29, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_cry_of_independence", { year, 'month': Calendar.JULY, 'day': 20, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_boyaca_batttle", { year, 'month': Calendar.AUGUST, 'day': 7, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_assumptio_of_the_virgin", { year, 'month': Calendar.AUGUST, 'day': 15, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_day_of_race", { year, 'month': Calendar.OCTOBER, 'day': 12, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_all_saints", { year, 'month': Calendar.NOVEMBER, 'day': 1, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_independence_of_cartagena", { year, 'month': Calendar.NOVEMBER, 'day': 11, 'emilini': true }))
+            holidays.push(new ColombiaHoliday("holiday_immaculate_conception", { year, 'month': Calendar.DECEMBER, 'day': 8, 'emilini': false }))
+            holidays.push(new ColombiaHoliday("holiday_christmas", { year, 'month': Calendar.DECEMBER, 'day': 25, 'emilini': false }))
+
+            return holidays;
+        }
+
+        let holidayMap = {}
+
+        const now = new Date()
+        console.log('Date now', now)
+        holidayMap['' + now.getFullYear()] = getHolidays(now.getFullYear())
+        console.log('Holiday Map', holidayMap)
+
+        Date.prototype.isHoliday = function () {
+            const listHolidays = holidayMap['' + this.getFullYear()] || []
+            for (let q = 0; q < listHolidays.length; q++) {
+                const holiday = listHolidays[q].getHoliday()
+                if (holiday.getMonth() == this.getMonth() && holiday.getDate() == this.getDate()) {
+                    this.setHolidayName(holiday.getHolidayName())
+                    return true
+                }
+            }
+            return false
+        }
+
+        const calendar = function (year, month) {
+            let text = '';
+            if (!holidayMap['' + year]) {
+                holidayMap['' + year] = getHolidays(year)
+            }
+
+            const date1 = new Date(year, month, 1, 0, 0, 0, 1)
+            // inicio de semana 0 a 6 Domingo = 0
+            const inicio = 1
+            const dia1 = date1.getDay()
+            const diaN = (((dia1 - inicio) % 7) + 7) % 7
+            const diaX = new Date(date1.getFullYear(), date1.getMonth() + 1, 0).getDate()
+
+            //          0  1  2  3  4  5  6
+            let tmp = 'domingo lunes martes miércoles jueves viernes sábado'
+            let nombreDias = tmp.split(' ')
+            tmp = ''
+
+            for (let i = inicio; i < nombreDias.length + inicio; i++) {
+                tmp += '<div>' + nombreDias[i % 7] + '</div>'
+            }
+            text += tmp
+            tmp = ''
+            const diaC = (diaX + diaN + 1)
+            const final = (Math.ceil((diaC - 1) / 7) * 7) + 1
+            console.log('dia N', diaN)
+            console.log('dia C', diaC)
+            console.log('dia F', final)
+            for (let x = 1; x < final; x++) {
+
+                if (x > diaN && x < diaC) {
+                    const t = x - diaN
+                    date1.setDate(t)
+                    const sunday = date1.isSunday()
+                    const holiday = date1.isHoliday()
+                    let day = '' + t
+                    if (sunday) {
+                        day = '<b style="color:red;">' + t + '</b>'
+                    }
+                    if (holiday) {
+                        day = ''
+                        day += '<u style="color:red;" onclick="myFunction(\'' + date1.getHolidayName() + '\')">' + t + '</u>'
+                        day += ''
+                    }
+
+                    tmp += '<div>' + day + '</div>'
+                } else {
+                    tmp += '<div> </div>'
+                }
+
+                if (x % 7 == 0) {
+                    text += tmp
+                    tmp = ''
+                }
+            }
+
+            document.getElementById("demo").innerHTML = text
+        }
+
+        function myFunction(name) {
+            document.getElementById("holiday").innerHTML = i18nHolidays_es[name]
+        }
+
+        document.getElementById("meses").value = now.getMonth() + 1
+        document.getElementById("meses").onchange = function (ev) {
+            document.getElementById("holiday").innerHTML = ''
+            calendar(now.getFullYear(), parseInt(ev.srcElement.value) - 1)
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const decrementButton = document.querySelector('.decrement');
+            const incrementButton = document.querySelector('.increment');
+            const numberInput = document.querySelector('.number-input');
+            numberInput.value = now.getFullYear()
+
+            document.getElementById("meses").onchange = function (ev) {
+                document.getElementById("holiday").innerHTML = ''
+                calendar(numberInput.value, parseInt(ev.srcElement.value) - 1)
+            }
+
+            decrementButton.addEventListener('click', function () {
+                decrement();
+                calendar(numberInput.value, parseInt(document.getElementById("meses").value) - 1)
+            });
+
+            incrementButton.addEventListener('click', function () {
+                increment();
+                calendar(numberInput.value, parseInt(document.getElementById("meses").value) - 1)
+            });
+
+            numberInput.addEventListener('input', function () {
+                // Ensure the input value is within the min and max bounds
+                const minValue = parseInt(numberInput.min);
+                const maxValue = parseInt(numberInput.max);
+                const currentValue = parseInt(numberInput.value);
+
+                if (currentValue < minValue) {
+                    numberInput.value = minValue;
+                } else if (currentValue > maxValue) {
+                    numberInput.value = maxValue;
+                }
+            });
+
+            function increment() {
+                const currentValue = parseInt(numberInput.value);
+                const maxValue = parseInt(numberInput.max);
+                if (currentValue < maxValue) {
+                    numberInput.value = currentValue + 1;
+                }
+            }
+
+            function decrement() {
+                const currentValue = parseInt(numberInput.value);
+                const minValue = parseInt(numberInput.min);
+                if (currentValue > minValue) {
+                    numberInput.value = currentValue - 1;
+                }
+            }
+        });
+
+
+        calendar(now.getFullYear(), now.getMonth())
+    </script>
+
+</body>
+
+</html>
