@@ -171,11 +171,31 @@
     </div>
     <div class="footer">
         <h1>Calendario Web</h1>
-        <h6>2024 - Versión 1.0.2</h6>
+        <h6>2024 - Versión 1.0.4</h6>
     </div>
 
     <script type="module">
         import { ColombiaHoliday } from "./scripts/ColombiaHoliday.js"
+
+        async function loadJSON() {
+            try {
+                const response = await fetch('./scripts/i18nHolidays.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data
+            } catch (error) {
+                console.error('Error al cargar el archivo JSON:', error);
+            }
+            return {}
+        }
+
+        const Calendar = { JANUARY: 1, MARCH: 3, MAY: 5, JUNE: 6, JULY: 7, AUGUST: 8, OCTOBER: 10, NOVEMBER: 11, DECEMBER: 12 }
+        let holidayMap = []
+        let i18nHolidays = {}
+        const language = navigator.language.substring(0, 2).toLocaleLowerCase();
+        console.log("Language:", language);
 
         Date.prototype.setHolidayName = function (name) {
             this.holidayName = name
@@ -185,6 +205,18 @@
         }
         Date.prototype.isSunday = function () {
             return this.getDay() == 0
+        }
+
+        Date.prototype.isHoliday = function () {
+            const listHolidays = holidayMap['' + this.getFullYear()] || []
+            for (let q = 0; q < listHolidays.length; q++) {
+                const holiday = listHolidays[q].getHoliday()
+                if (holiday.getMonth() == this.getMonth() && holiday.getDate() == this.getDate()) {
+                    this.setHolidayName(holiday.getHolidayName())
+                    return true
+                }
+            }
+            return false
         }
 
         function anonymousGregorianAlgorithm(year) {
@@ -206,30 +238,11 @@
             return new Date(year, month - 1, day);
         }
 
-        const i18nHolidays_es = {
-            holiday_new_year: 'Día de Año Nuevo',
-            holiday_three_kings: 'Día de los Reyes Magos',
-            holiday_saint_joseph: 'San Jose',
-            holiday_holy_thursday: 'Jueves Santo',
-            holiday_holy_friday: 'Viernes Santo',
-            holiday_labor: 'Día del trabajo',
-            holiday_ascension_of_jesus: 'Ascensión de Jesús',
-            holiday_corpus_christi: 'Corpus Christi',
-            holiday_sacred_heart_of_jesus: 'Sagrado Corazón de Jesús',
-            holiday_saint_peter_and_paul: 'San Pedro y San Pablo',
-            holiday_cry_of_independence: 'Grito de Independencia',
-            holiday_boyaca_batttle: 'Batalla de Boyacá',
-            holiday_assumptio_of_the_virgin: 'Asunción de la Virgen',
-            holiday_day_of_race: 'Día de la Raza',
-            holiday_all_saints: 'Todos los Santos',
-            holiday_independence_of_cartagena: 'Independencia de Cartagena',
-            holiday_immaculate_conception: 'Inmaculada Concepción',
-            holiday_christmas: 'Navidad(pascua)'
-        }
+        export function generateHolidays(year) {
 
-        const Calendar = { JANUARY: 1, MARCH: 3, MAY: 5, JUNE: 6, JULY: 7, AUGUST: 8, OCTOBER: 10, NOVEMBER: 11, DECEMBER: 12 }
-
-        function getHolidays(year) {
+            if (holidayMap['' + year]) {
+                return holidayMap['' + year]
+            }
 
             const easterDay = anonymousGregorianAlgorithm(year)
             let holidays = []
@@ -253,33 +266,36 @@
             holidays.push(new ColombiaHoliday("holiday_immaculate_conception", { year, 'month': Calendar.DECEMBER, 'day': 8, 'emilini': false }))
             holidays.push(new ColombiaHoliday("holiday_christmas", { year, 'month': Calendar.DECEMBER, 'day': 25, 'emilini': false }))
 
-            return holidays;
+            holidayMap['' + year] = holidays
+
+            return holidayMap['' + year];
         }
 
-        let holidayMap = {}
+        export function getHolidayName(name) {
+            if (!!i18nHolidays[language]) {
+                return i18nHolidays[language][name]
+            } else {
+                return i18nHolidays['en'][name]
+            }
+        }
 
+        loadJSON().then(value => {
+            i18nHolidays = value
+            console.log('i18nHolidays - loaded!')
+        });
+
+        window.generateHolidays = generateHolidays;
+        window.getHolidayName = getHolidayName;
+    </script>
+
+    <script>
         const now = new Date()
         console.log('Date now', now)
-        holidayMap['' + now.getFullYear()] = getHolidays(now.getFullYear())
-        console.log('Holiday Map', holidayMap)
-
-        Date.prototype.isHoliday = function () {
-            const listHolidays = holidayMap['' + this.getFullYear()] || []
-            for (let q = 0; q < listHolidays.length; q++) {
-                const holiday = listHolidays[q].getHoliday()
-                if (holiday.getMonth() == this.getMonth() && holiday.getDate() == this.getDate()) {
-                    this.setHolidayName(holiday.getHolidayName())
-                    return true
-                }
-            }
-            return false
-        }
 
         const calendar = function (year, month) {
+
             let text = '';
-            if (!holidayMap['' + year]) {
-                holidayMap['' + year] = getHolidays(year)
-            }
+            generateHolidays(year)
 
             const date1 = new Date(year, month, 1, 0, 0, 0, 1)
             // inicio de semana 0 a 6 Domingo = 0
@@ -316,16 +332,14 @@
                     }
                     if (holiday) {
                         day = ''
-                        day += '<u style="color:red;" onclick="myFunction(\'' + date1.getHolidayName() + '\')">' + t + '</u>'
+                        day += '<u style="color:red;" onclick="onclickEvent(\'' + date1.getHolidayName() + '\')">' + t + '</u>'
                         day += ''
                     }
-
                     if (date1.getDate() == now.getDate() && date1.getMonth() == now.getMonth() && date1.getFullYear() == now.getFullYear()) {
                         tmp += '<div class="now">' + day + '</div>'
                     } else {
                         tmp += '<div>' + day + '</div>'
                     }
-
 
                 } else {
                     tmp += '<div> </div>'
@@ -340,8 +354,8 @@
             document.getElementById("demo").innerHTML = text
         }
 
-        function myFunction(name) {
-            document.getElementById("holiday").innerHTML = i18nHolidays_es[name]
+        function onclickEvent(name) {
+            document.getElementById("holiday").innerHTML = getHolidayName(name)
         }
 
         document.getElementById("meses").value = now.getMonth() + 1
@@ -399,11 +413,10 @@
                     numberInput.value = currentValue - 1;
                 }
             }
-        });
 
-
-        calendar(now.getFullYear(), now.getMonth());
-        window.myFunction = myFunction;
+            calendar(now.getFullYear(), now.getMonth());
+            console.log("DOMContentLoaded - Finished !!!");
+        });  
     </script>
 
 </body>

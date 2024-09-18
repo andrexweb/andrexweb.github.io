@@ -1,0 +1,42 @@
+{
+    "es": {
+        "holiday_new_year": "Día de Año Nuevo",
+        "holiday_three_kings": "Día de los Reyes Magos",
+        "holiday_saint_joseph": "San Jose",
+        "holiday_holy_thursday": "Jueves Santo",
+        "holiday_holy_friday": "Viernes Santo",
+        "holiday_labor": "Día del trabajo",
+        "holiday_ascension_of_jesus": "Ascensión de Jesús",
+        "holiday_corpus_christi": "Corpus Christi",
+        "holiday_sacred_heart_of_jesus": "Sagrado Corazón de Jesús",
+        "holiday_saint_peter_and_paul": "San Pedro y San Pablo",
+        "holiday_cry_of_independence": "Grito de Independencia",
+        "holiday_boyaca_batttle": "Batalla de Boyacá",
+        "holiday_assumptio_of_the_virgin": "Asunción de la Virgen",
+        "holiday_day_of_race": "Día de la Raza",
+        "holiday_all_saints": "Todos los Santos",
+        "holiday_independence_of_cartagena": "Independencia de Cartagena",
+        "holiday_immaculate_conception": "Inmaculada Concepción",
+        "holiday_christmas": "Navidad(pascua)"
+    },
+    "en": {
+        "holiday_new_year": "New Year's Day",
+        "holiday_three_kings": "Three Kings Day",
+        "holiday_saint_joseph": "Saint Joseph",
+        "holiday_holy_thursday": "Holy Thursday",
+        "holiday_holy_friday": "Holy Friday",
+        "holiday_labor": "Labor Day",
+        "holiday_ascension_of_jesus": "Ascension of Jesus",
+        "holiday_corpus_christi": "Corpus Christi",
+        "holiday_sacred_heart_of_jesus": "Sacred Heart of Jesus",
+        "holiday_saint_peter_and_paul": "Saint Peter and Saint Paul",
+        "holiday_cry_of_independence": "Cry of Independence",
+        "holiday_boyaca_batttle": "Boyaca's battle",
+        "holiday_assumptio_of_the_virgin": "Assumption of the Virgin",
+        "holiday_day_of_race": "Day of race",
+        "holiday_all_saints": "All Saints",
+        "holiday_independence_of_cartagena": "Independence of Cartagena",
+        "holiday_immaculate_conception": "Immaculate Conception",
+        "holiday_christmas": "Christmas (Easter) "
+    }
+}
