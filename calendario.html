@@ -27,7 +27,7 @@
 
         .header {
             background-color: #fcd116;
-            color: #000000;
+            color: #003893;
             padding: 15px;
         }
 
@@ -43,9 +43,9 @@
         .grid-container {
             display: grid;
             grid-template-columns: auto auto auto auto auto auto auto;
-            gap: 1px;
+            /*gap: 1px;*/
             background-color: #003893;
-            padding: 5px;
+            /*padding: 5px;*/
         }
 
         .grid-container>div {
@@ -67,7 +67,7 @@
 
         .footer {
             background-color: #ce1126;
-            color: #000000;
+            color: #ccc;
             padding: 15px;
             margin-top: auto;
         }
@@ -92,6 +92,11 @@
             text-align: center;
             font-size: 20px;
             padding: 16px;
+        }
+
+        .button-now{
+            width: 100%;
+            min-height: 24px;
         }
 
         button {
@@ -124,14 +129,19 @@
         .holiday {
             text-align: center;
             font-size: 20px;
-            padding: 16px;
-            color: #fff;
+            color: blue;
             background-color: #4d61c4;
             min-height: 24px;
         }
 
+        .holiday>div {
+            background-color: rgba(255, 255, 255, 0.8);
+            min-height: 24px;
+            padding: 16px;
+        }
+
         .now {
-            background-color: rgba(255, 255, 255, 0.7) !important;
+            background-color: #4d61c462 !important;
         }
     </style>
 </head>
@@ -139,7 +149,7 @@
 <body>
 
     <div class="header">
-        <h1>Calendario con Festivos</h1>
+        <h1>Festivos Colombianos</h1>
     </div>
 
     <div class="main">
@@ -149,6 +159,7 @@
                 <input type="number" class="number-input" min="1900" max="3000">
                 <button class="increment">&nbsp;&raquo;&nbsp;</button>
             </div>
+            <div>&nbsp;</div>
             <select id="meses" name="meses" class="select-input">
                 <option value="1">Enero</option>
                 <option value="2">Febrero</option>
@@ -164,19 +175,20 @@
                 <option value="12">Diciembre</option>
             </select>
         </form>
-
+        <div>&nbsp;</div>
         <div id="demo" class="grid-container"></div>
-
-        <div id="holiday" class="holiday"></div>
+        <div>&nbsp;</div>
+        <div class="holiday"><div id="holiday" ></div></div>
+        <div>&nbsp;</div>
+        <div class="">  <button class="button-now"></button> </div>
     </div>
     <div class="footer">
         <h1>Calendario Web</h1>
-        <h6>2025 - Versión 1.0.5</h6>
+        <h6>2025 - Versión 1.0.6</h6>
     </div>
 
     <script type="module">
-        import { ColombiaHoliday } from "./scripts/ColombiaHoliday.js"
-        import { anonymousGregorianAlgorithm } from "./scripts/GregorianAlgorithm.js"
+        import { ColombiaDate } from "./scripts/ColombiaDate.js"
 
         async function loadJSON() {
             try {
@@ -192,73 +204,44 @@
             return {}
         }
 
-        const Calendar = { JANUARY: 1, MARCH: 3, MAY: 5, JUNE: 6, JULY: 7, AUGUST: 8, OCTOBER: 10, NOVEMBER: 11, DECEMBER: 12 }
-        let holidayMap = []
         let i18nHolidays = {}
         const language = navigator.language.substring(0, 2).toLocaleLowerCase();
         console.log("Language:", language);
 
-        Date.prototype.setHolidayName = function (name) {
-            this.holidayName = name
-        }
-        Date.prototype.getHolidayName = function () {
-            return this.holidayName
-        }
-        Date.prototype.isSunday = function () {
-            return this.getDay() == 0
-        }
-
-        Date.prototype.isHoliday = function () {
-            const listHolidays = holidayMap['' + this.getFullYear()] || []
-            for (let q = 0; q < listHolidays.length; q++) {
-                const holiday = listHolidays[q].getHoliday()
-                if (holiday.getMonth() == this.getMonth() && holiday.getDate() == this.getDate()) {
-                    this.setHolidayName(holiday.getHolidayName())
-                    return true
-                }
+        function getLabel(name) {
+            let label = undefined
+            if (!!i18nHolidays[language]) {
+                label = i18nHolidays[language][name]
+            } else {
+                label = i18nHolidays['en'][name]
             }
-            return false
-        }
-
-        export function generateHolidays(year) {
-
-            if (holidayMap['' + year]) {
-                return holidayMap['' + year]
+            if(label){
+                return label
             }
-
-            const easterDay = anonymousGregorianAlgorithm(year)
-            let holidays = []
-
-            holidays.push(new ColombiaHoliday("holiday_new_year", { year, 'month': Calendar.JANUARY, 'day': 1, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_three_kings", { year, 'month': Calendar.JANUARY, 'day': 6, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_saint_joseph", { year, 'month': Calendar.MARCH, 'day': 19, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_holy_thursday", { easterDay, 'addEaster': -3, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_holy_friday", { easterDay, 'addEaster': -2, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_labor", { year, 'month': Calendar.MAY, 'day': 1, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_ascension_of_jesus", { easterDay, 'addEaster': 39, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_corpus_christi", { easterDay, 'addEaster': 60, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_sacred_heart_of_jesus", { easterDay, 'addEaster': 68, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_saint_peter_and_paul", { year, 'month': Calendar.JUNE, 'day': 29, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_cry_of_independence", { year, 'month': Calendar.JULY, 'day': 20, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_boyaca_batttle", { year, 'month': Calendar.AUGUST, 'day': 7, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_assumptio_of_the_virgin", { year, 'month': Calendar.AUGUST, 'day': 15, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_day_of_race", { year, 'month': Calendar.OCTOBER, 'day': 12, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_all_saints", { year, 'month': Calendar.NOVEMBER, 'day': 1, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_independence_of_cartagena", { year, 'month': Calendar.NOVEMBER, 'day': 11, 'emilini': true }))
-            holidays.push(new ColombiaHoliday("holiday_immaculate_conception", { year, 'month': Calendar.DECEMBER, 'day': 8, 'emilini': false }))
-            holidays.push(new ColombiaHoliday("holiday_christmas", { year, 'month': Calendar.DECEMBER, 'day': 25, 'emilini': false }))
-
-            holidayMap['' + year] = holidays
-
-            return holidayMap['' + year];
+            return name
         }
 
         export function getHolidayName(name) {
-            if (!!i18nHolidays[language]) {
-                return i18nHolidays[language][name]
-            } else {
-                return i18nHolidays['en'][name]
+
+            if (!i18nHolidays) {
+                console.error('i18nHolidays not loaded yet!')
+                return name
             }
+
+            let labels
+
+            if(name.includes(',')){
+                labels = name.split(',')
+            }else{
+                labels = [name]
+            }
+
+            labels = labels.map((label) => {
+                return getLabel(label.trim())
+            })
+
+            
+            return labels.join(', ')
         }
 
         loadJSON().then(value => {
@@ -266,20 +249,22 @@
             console.log('i18nHolidays - loaded!')
         });
 
-        window.generateHolidays = generateHolidays;
         window.getHolidayName = getHolidayName;
+        window.ColombiaDate = ColombiaDate;
     </script>
 
     <script>
-        const now = new Date()
-        console.log('Date now', now)
+        const nowDate = new Date()
+        console.log('Date now', nowDate)
 
         const calendar = function (year, month) {
 
-            let text = '';
-            generateHolidays(year)
+            console.log('Calendar - year', year, 'month', month)
 
-            const date1 = new Date(year, month, 1, 0, 0, 0, 1)
+            let text = '';
+
+            const date1 = new ColombiaDate(year, month, 1)
+            console.log('ColombiaDate - year', date1.getFullYear(), 'month', date1.getMonth(), 'day', date1.getDate())
             // inicio de semana 0 a 6 Domingo = 0
             const inicio = 1
             const dia1 = date1.getDay()
@@ -287,8 +272,8 @@
             const diaX = new Date(date1.getFullYear(), date1.getMonth() + 1, 0).getDate()
 
             //          0  1  2  3  4  5  6
-            let tmp = 'domingo lunes martes miércoles jueves viernes sábado'
-            let nombreDias = tmp.split(' ')
+            let tmp = '<div style="color:red;">domingo</div>|lunes|martes|miércoles|jueves|viernes|<div style="color:blue;">sábado</div>'
+            let nombreDias = tmp.split('|')
             tmp = ''
 
             for (let i = inicio; i < nombreDias.length + inicio; i++) {
@@ -296,6 +281,7 @@
             }
             text += tmp
             tmp = ''
+            let tmp2 = ''
             const diaC = (diaX + diaN + 1)
             const final = (Math.ceil((diaC - 1) / 7) * 7) + 1
             console.log('dia N', diaN)
@@ -306,29 +292,52 @@
                 if (x > diaN && x < diaC) {
                     const t = x - diaN
                     date1.setDate(t)
+                    console.log('Calendar - year', date1.getFullYear(), 'month', date1.getMonth(), 'day', date1.getDate())
+                    const saturday = date1.isSaturday()
                     const sunday = date1.isSunday()
                     const holiday = date1.isHoliday()
-                    let day = '' + t
-                    if (sunday) {
-                        day = '<b style="color:red;">' + t + '</b>'
+                    const specialday = date1.isSpecialDay()
+                    const now = date1.getDate() == nowDate.getDate() && date1.getMonth() == nowDate.getMonth() && date1.getFullYear() == nowDate.getFullYear()
+                    let day = t.toString().padStart(3, 'x').replaceAll('x','&nbsp;') +'&nbsp;'
+                    let color = 'color:black;'
+                    let backgroundColor = ''
+                    let textDecoration = ''
+                    let textDecoration2 = ''
+                    let text = date1.getHolidayName()
+                    if (saturday) {
+                        color = 'color:blue;'
                     }
-                    if (holiday) {
-                        day = ''
-                        day += '<u style="color:red;" onclick="onclickEvent(\'' + date1.getHolidayName() + '\')">' + t + '</u>'
-                        day += ''
-                    }
-                    if (date1.getDate() == now.getDate() && date1.getMonth() == now.getMonth() && date1.getFullYear() == now.getFullYear()) {
-                        tmp += '<div class="now">' + day + '</div>'
-                    } else {
-                        tmp += '<div>' + day + '</div>'
+                    if (sunday || holiday) {
+                        color = 'color:red;'
+                        if (holiday && sunday) {
+                            textDecoration = 'text-decoration: red wavy underline !important;'
+                            textDecoration += '-webkit-text-decoration: red wavy underline !important;'
+                        }
                     }
 
+                    if(specialday){
+                        //console.log('specialday', date1.getHolidayName())
+                        textDecoration2 += 'text-decoration: blue wavy overline;'
+                        textDecoration2 += '-webkit-text-decoration: blue wavy overline;'
+                    }
+
+                    if (now) {
+                        backgroundColor = 'background-color: rgba(255, 255, 255, 0.7) !important;'
+                    }
+
+                    tmp2 += `<div style="${textDecoration2}">&nbsp;&nbsp;&nbsp;&nbsp;</div>`
+                    tmp += `<div style="${color}${backgroundColor}${textDecoration}" onclick="onclickEvent('${text}')">${day}</div>`
+
                 } else {
-                    tmp += '<div> </div>'
+                    tmp += '<div>&nbsp;&nbsp;</div>'
+                    tmp2 += '<div>&nbsp;&nbsp;</div>'
                 }
+                
 
                 if (x % 7 == 0) {
                     text += tmp
+                    text += tmp2
+                    tmp2 = ''
                     tmp = ''
                 }
             }
@@ -340,18 +349,27 @@
             document.getElementById("holiday").innerHTML = getHolidayName(name)
         }
 
-        document.getElementById("meses").value = now.getMonth() + 1
+        document.getElementById("meses").value = nowDate.getMonth() + 1
         document.getElementById("meses").onchange = function (ev) {
             document.getElementById("holiday").innerHTML = ''
-            calendar(now.getFullYear(), parseInt(ev.srcElement.value) - 1)
+            calendar(nowDate.getFullYear(), parseInt(ev.srcElement.value) - 1)
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+            const nowButton = document.querySelector('.button-now');
             const decrementButton = document.querySelector('.decrement');
             const incrementButton = document.querySelector('.increment');
             const numberInput = document.querySelector('.number-input');
-            numberInput.value = now.getFullYear()
+            numberInput.value = nowDate.getFullYear()
 
+            nowButton.innerHTML =  nowDate.getFullYear() + ' - ' + (nowDate.getMonth() + 1).toString().padStart(2, '0') + ' - ' +nowDate.getDate().toString().padStart(2, '0') 
+            nowButton.addEventListener('click', function () {
+                numberInput.value = nowDate.getFullYear()
+                document.getElementById("meses").value = nowDate.getMonth() + 1
+                document.getElementById("holiday").innerHTML = ''
+                calendar(nowDate.getFullYear(), nowDate.getMonth())
+            });
+            
             document.getElementById("meses").onchange = function (ev) {
                 document.getElementById("holiday").innerHTML = ''
                 calendar(numberInput.value, parseInt(ev.srcElement.value) - 1)
@@ -396,7 +414,7 @@
                 }
             }
 
-            calendar(now.getFullYear(), now.getMonth());
+            calendar(nowDate.getFullYear(), nowDate.getMonth());
             console.log("DOMContentLoaded - Finished !!!");
         });  
     </script>

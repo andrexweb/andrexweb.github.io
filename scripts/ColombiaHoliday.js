@@ -1,5 +1,10 @@
 /**
- * ColombiaHoliday
+ * ColombiaHoliday.js
+ * 
+ * Ley Memiliani o Ley 51 de 1983
+ * 
+ * @class ColombiaHoliday
+ * @description Class to calculate holidays in Colombia
  */
 export class ColombiaHoliday {
     constructor(name, options) {
@@ -23,7 +28,6 @@ export class ColombiaHoliday {
                 this.day = this.leyEmilianiDate(options.year, options.month - 1, options.day);
             }
         }
-        this.day.setHolidayName(this.holidayName)
     }
 
     getHoliday() {
